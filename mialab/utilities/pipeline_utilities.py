@@ -68,20 +68,27 @@ class FeatureExtractor:
             structure.BrainImage: The image with extracted features.
         """
         # todo: add T2w features
-        warnings.warn('No features from T2-weighted image extracted.')
+        # warnings.warn('No features from T2-weighted image extracted.')
 
         if self.coordinates_feature:
             atlas_coordinates = fltr_feat.AtlasCoordinates()
             self.img.feature_images[FeatureImageTypes.ATLAS_COORD] = \
                 atlas_coordinates.execute(self.img.images[structure.BrainImageTypes.T1w])
+            self.img.feature_images[FeatureImageTypes.ATLAS_COORD] = \
+                atlas_coordinates.execute(self.img.images[structure.BrainImageTypes.T2w])
 
         if self.intensity_feature:
-            self.img.feature_images[FeatureImageTypes.T1w_INTENSITY] = self.img.images[structure.BrainImageTypes.T1w]
+            self.img.feature_images[FeatureImageTypes.T1w_INTENSITY] = \
+                self.img.images[structure.BrainImageTypes.T1w]
+            self.img.feature_images[FeatureImageTypes.T2w_INTENSITY] = \
+                self.img.images[structure.BrainImageTypes.T2w]
 
         if self.gradient_intensity_feature:
             # compute gradient magnitude images
             self.img.feature_images[FeatureImageTypes.T1w_GRADIENT_INTENSITY] = \
                 sitk.GradientMagnitude(self.img.images[structure.BrainImageTypes.T1w])
+            self.img.feature_images[FeatureImageTypes.T2w_GRADIENT_INTENSITY] = \
+                sitk.GradientMagnitude(self.img.images[structure.BrainImageTypes.T2w])
 
         self._generate_feature_matrix()
 
@@ -288,10 +295,12 @@ def init_evaluator() -> eval_.Evaluator:
         eval.Evaluator: An evaluator.
     """
 
-    # initialize metrics
-    metrics = [metric.DiceCoefficient()]
+    # initialize metrics --> "metrics" is a list of quality metrics
+    metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(95.0)]
     # todo: add hausdorff distance, 95th percentile (see metric.HausdorffDistance)
-    warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
+    # warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
+    # -> Average distance & Probabilistic distance are suitable if there are outliers (stable)
+    # -> Hausdorff distance is suitable if the accuracy of the boundary is of importance
 
     # define the labels to evaluate
     labels = {1: 'WhiteMatter',
