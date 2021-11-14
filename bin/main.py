@@ -73,36 +73,36 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     # labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-     #for x in range(5):
-        singleLabel = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
-        #singleLabel[np.where(singleLabel != x+1)] = 0
+    # for x in range(5):
+    singleLabel = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+    # singleLabel[np.where(singleLabel != x+1)] = 0
 
-        # generate random seed
-        initialSeed = 42
-        np.random.seed(initialSeed)
-        np.random.random()
+    # generate random seed
+    initialSeed = 42
+    np.random.seed(initialSeed)
+    np.random.random()
 
 
-        # warnings.warn('Random forest parameters not properly set.')
-        forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                    n_estimators=10,
-                                                    max_depth=10)
+    # warnings.warn('Random forest parameters not properly set.')
+    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                n_estimators=10,
+                                                max_depth=10)
 
-        start_time = timeit.default_timer()
+    start_time = timeit.default_timer()
 
-        forest.fit(data_train, singleLabel)
-        # pdb.set_trace()
+    forest.fit(data_train, singleLabel)
+    # pdb.set_trace()
 
-        # if 1 == x + 1:
-        #     forest1 = forest
-        # if 2 == x + 1:
-        #     forest2 = forest
-        # if 3 == x + 1:
-        #     forest3 = forest
-        # if 4 == x + 1:
-        #     forest4 = forest
-        # if 5 == x + 1:
-        #     forest5 = forest
+    # if 1 == x + 1:
+    #     forest1 = forest
+    # if 2 == x + 1:
+    #     forest2 = forest
+    # if 3 == x + 1:
+    #     forest3 = forest
+    # if 4 == x + 1:
+    #     forest4 = forest
+    # if 5 == x + 1:
+    #     forest5 = forest
 
 
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
