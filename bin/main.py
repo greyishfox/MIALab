@@ -7,6 +7,7 @@ import datetime
 import os
 import sys
 import timeit
+import pdb
 import warnings
 
 import SimpleITK as sitk
@@ -70,20 +71,40 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # generate feature matrix and label vector
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
-    labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+    # labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    # generate random seed
-    initialSeed = 42
-    np.random.seed(initialSeed)
-    np.random.random()
+    for x in range(5):
+        singleLabel = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+        singleLabel[np.where(singleLabel != x+1)] = 0
 
-    # warnings.warn('Random forest parameters not properly set.')
-    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=10,
-                                                max_depth=10)
+        # generate random seed
+        initialSeed = 42
+        np.random.seed(initialSeed)
+        np.random.random()
 
-    start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
+
+        # warnings.warn('Random forest parameters not properly set.')
+        forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                    n_estimators=10,
+                                                    max_depth=10)
+
+        start_time = timeit.default_timer()
+
+        forest.fit(data_train, singleLabel)
+        # pdb.set_trace()
+
+        if 1 == x + 1:
+            forest1 = forest
+        if 2 == x + 1:
+            forest2 = forest
+        if 3 == x + 1:
+            forest3 = forest
+        if 4 == x + 1:
+            forest4 = forest
+        if 5 == x + 1:
+            forest5 = forest
+
+
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
@@ -113,8 +134,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
-        predictions = forest.predict(img.feature_matrix[0])
-        probabilities = forest.predict_proba(img.feature_matrix[0])
+        predictions = forest1.predict(img.feature_matrix[0])
+        probabilities = forest1.predict_proba(img.feature_matrix[0])
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
@@ -184,14 +205,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data_train_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/train/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/train2/')),
         help='Directory with training data.'
     )
 
     parser.add_argument(
         '--data_test_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/test/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/test2/')),
         help='Directory with testing data.'
     )
 

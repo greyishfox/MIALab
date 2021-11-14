@@ -1,6 +1,7 @@
 """This module contains utility classes and functions."""
 import enum
 import os
+import pdb
 import typing as t
 import warnings
 
@@ -97,6 +98,7 @@ class FeatureExtractor:
     def _generate_feature_matrix(self):
         """Generates a feature matrix."""
 
+
         mask = None
         if self.training:
             # generate a randomized mask where 1 represents voxels used for training
@@ -123,6 +125,8 @@ class FeatureExtractor:
             mask = np.logical_not(mask)
 
         # generate features
+        # pdb.set_trace()
+        # TODO: why is here self.img.feature_images.items() zu gross! 7 statt 5
         data = np.concatenate(
             [self._image_as_numpy_array(image, mask) for id_, image in self.img.feature_images.items()],
             axis=1)
