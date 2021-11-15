@@ -71,37 +71,44 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # generate feature matrix and label vector
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
-    # labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+    labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    for x in range(5):
-        singleLabel = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
+    data_trainAll = []
+    singleLabelAll = []
+    labelNbr = 5
+
+    for x in range(labelNbr):
+        singleLabel = labels_train.copy()
         singleLabel[np.where(singleLabel != x+1)] = 0
+        singleLabelAll.append(singleLabel)
+        data_trainAll.append(data_train)
 
-        # generate random seed
-        initialSeed = 42
-        np.random.seed(initialSeed)
-        np.random.random(x§x
+    # generate random seed
+    initialSeed = 42
+    np.random.seed(initialSeed)
+    np.random.random()
 
-        # warnings.warn('Random forest parameters not properly set.')
-        forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                    n_estimators=10,
-                                                    max_depth=10)
+    # warnings.warn('Random forest parameters not properly set.')
+    forest = sk_ensemble.RandomForestClassifier(max_features=labelNbr,
+                                                n_estimators=10,
+                                                max_depth=10)
 
-        start_time = timeit.default_timer()
+    start_time = timeit.default_timer()
 
-        forest.fit(data_train, singleLabel)
+    #pdb.set_trace()
+    forest.fit(np.concatenate(data_trainAll).squeeze(), np.concatenate(singleLabelAll).squeeze())
         # pdb.set_trace()xx
 
-        if 1 == x + 1:
-            forest1 = forest
-        if 2 == x + 1:
-            forest2 = forest
-        if 3 == x + 1:
-            forest3 = forest
-        if 4 == x + 1:
-            forest4 = forest
-        if 5 == x + 1:
-            forest5 = forest
+        # if 1 == x + 1:
+        #     forest1 = forest
+        # if 2 == x + 1:
+        #     forest2 = forest
+        # if 3 == x + 1:
+        #     forest3 = forest
+        # if 4 == x + 1:
+        #     forest4 = forest
+        # if 5 == x + 1:
+        #     forest5 = forest
 
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
@@ -128,12 +135,15 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_prediction = []
     images_probabilities = []
 
-    for img in images_test:
+    # pdb.set_trace()
+    images_testAll = np.concatenate([images_test]*5).squeeze()
+
+    for img in images_testAll:
         print('-' * 10, 'Testing', img.id_)
 
-        start_time = timeit.default_timer()
-        predictions = forest1.predict(img.feature_matrix[0])
-        probabilities = forest1.predict_proba(img.feature_matrix[0])
+        predictions = forest.predict(img.feature_matrix[0])
+        probabilities = forest.predict_proba(img.feature_matrix[0])
+
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
@@ -151,6 +161,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     post_process_params = {'simple_post': True}
     images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
                                                      post_process_params, multi_process=True)
+    # pdb.set_trace()
 
     for i, img in enumerate(images_test):
         evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
