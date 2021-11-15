@@ -321,7 +321,17 @@ def init_evaluator(nbr) -> eval_.Evaluator:
     #           }
 
     # labels = {nbr: brainLabels(nbr)}
-    labels = {1: 'WhiteMatter'}
+    if(nbr == 1):
+        labels = {1: 'WhiteMatter'}
+    if(nbr == 2):
+        labels = {2: 'GreyMatter'}
+    if(nbr == 3):
+        labels = {3: 'Hippocampus'}
+    if(nbr == 4):
+        labels = {4: 'Amygdala'}
+    if(nbr == 5):
+        labels = {5: 'Thalamus'}
+
     evaluator = eval_.SegmentationEvaluator(metrics, labels)
     return evaluator
 
