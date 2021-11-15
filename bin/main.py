@@ -34,7 +34,7 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
 
 
-def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
+def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str, treeN, treeD, labelNbr ):
     """Brain tissue segmentation using decision forests.
 
     The main routine executes the medical image analysis pipeline:
@@ -75,7 +75,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     data_trainAll = []
     singleLabelAll = []
-    labelNbr = 1
+    labelNbr = labelNbr
 
     # for x in range(labelNbr):
     singleLabel = labels_train.copy()
@@ -90,8 +90,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # warnings.warn('Random forest parameters not properly set.')
     forest = sk_ensemble.RandomForestClassifier(max_features=2,
-                                                n_estimators=10,
-                                                max_depth=10)
+                                                n_estimators=treeN,
+                                                max_depth=treeD)
 
     start_time = timeit.default_timer()
 
@@ -170,8 +170,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_' + str(labelNbr) + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ +  '_' +  str(labelNbr) + '_SEG-PP.mha'), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_Label-' + str(labelNbr) + 'TreeN-' + str(treeN) + '_TreeD-' + str(treeD) + '_SEG.mha'), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ +  '_Label-' +  str(labelNbr) + 'TreeN-' + str(treeN) + '_TreeD-' + str(treeD) + '_SEG-PP.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
@@ -227,5 +227,11 @@ if __name__ == "__main__":
         help='Directory with testing data.'
     )
 
+
     args = parser.parse_args()
-    main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir)
+
+    treeN = [1, 5, 10, 20, 50]
+    treeD = [5, 10, 20, 40, 80]
+    label = [1, 2, 3, 4, 5]
+    for i in range(5):
+        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir, treeN[2], treeD[3],label[i])
