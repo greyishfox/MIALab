@@ -75,13 +75,13 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     data_trainAll = []
     singleLabelAll = []
-    labelNbr = 5
+    labelNbr = 1
 
-    for x in range(labelNbr):
-        singleLabel = labels_train.copy()
-        singleLabel[np.where(singleLabel != x+1)] = 0
-        singleLabelAll.append(singleLabel)
-        data_trainAll.append(data_train)
+    # for x in range(labelNbr):
+    singleLabel = labels_train.copy()
+    singleLabel[np.where(singleLabel != labelNbr)] = 0
+        # singleLabelAll.append(singleLabel)
+        # data_trainAll.append(data_train)
 
     # generate random seed
     initialSeed = 42
@@ -89,14 +89,16 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     np.random.random()
 
     # warnings.warn('Random forest parameters not properly set.')
-    forest = sk_ensemble.RandomForestClassifier(max_features=labelNbr,
+    forest = sk_ensemble.RandomForestClassifier(max_features=2,
                                                 n_estimators=10,
                                                 max_depth=10)
 
     start_time = timeit.default_timer()
 
     #pdb.set_trace()
-    forest.fit(np.concatenate(data_trainAll).squeeze(), np.concatenate(singleLabelAll).squeeze())
+    # forest.fit(np.concatenate(data_trainAll).squeeze(), np.concatenate(singleLabelAll).squeeze())
+    forest.fit(data_train, singleLabel)
+
         # pdb.set_trace()xx
 
         # if 1 == x + 1:
@@ -120,7 +122,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     print('-' * 5, 'Testing...')
 
     # initialize evaluator
-    evaluator = putil.init_evaluator()
+    evaluator = putil.init_evaluator(labelNbr)
 
     # crawl the training image directories
     crawler = futil.FileSystemDataCrawler(data_test_dir,
@@ -136,9 +138,9 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_probabilities = []
 
     # pdb.set_trace()
-    images_testAll = np.concatenate([images_test]*5).squeeze()
+    # images_testAll = np.concatenate([images_test]*5).squeeze()
 
-    for img in images_testAll:
+    for img in images_test:
         print('-' * 10, 'Testing', img.id_)
 
         predictions = forest.predict(img.feature_matrix[0])
@@ -168,8 +170,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_' + str(labelNbr) + '_SEG.mha'), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ +  '_' +  str(labelNbr) + '_SEG-PP.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists

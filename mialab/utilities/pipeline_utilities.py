@@ -46,6 +46,12 @@ class FeatureImageTypes(enum.Enum):
     T2w_INTENSITY = 4
     T2w_GRADIENT_INTENSITY = 5
 
+class brainLabels(enum.Enum):
+    WhiteMatter = 1
+    GreyMatter = 2
+    Hippocampus = 3
+    Amygdala = 4
+    Thalamus = 5
 
 class FeatureExtractor:
     """Represents a feature extractor."""
@@ -292,7 +298,7 @@ def post_process(img: structure.BrainImage, segmentation: sitk.Image, probabilit
     return pipeline.execute(segmentation)
 
 
-def init_evaluator() -> eval_.Evaluator:
+def init_evaluator(nbr) -> eval_.Evaluator:
     """Initializes an evaluator.
 
     Returns:
@@ -306,14 +312,16 @@ def init_evaluator() -> eval_.Evaluator:
     # -> Average distance & Probabilistic distance are suitable if there are outliers (stable)
     # -> Hausdorff distance is suitable if the accuracy of the boundary is of importance
 
-    # define the labels to evaluate
-    labels = {1: 'WhiteMatter',
-              2: 'GreyMatter',
-              3: 'Hippocampus',
-              4: 'Amygdala',
-              5: 'Thalamus'
-              }
+    # # define the labels to evaluate
+    # labels = {1: 'WhiteMatter',
+    #           2: 'GreyMatter',
+    #           3: 'Hippocampus',
+    #           4: 'Amygdala',
+    #           5: 'Thalamus'
+    #           }
 
+    # labels = {nbr: brainLabels(nbr)}
+    labels = {1: 'WhiteMatter'}
     evaluator = eval_.SegmentationEvaluator(metrics, labels)
     return evaluator
 
