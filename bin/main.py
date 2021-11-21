@@ -7,8 +7,8 @@ import datetime
 import os
 import sys
 import timeit
-import pdb
-import warnings
+# import pdb
+# import warnings
 
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
@@ -34,7 +34,7 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
 
 
-def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str, treeN, treeD, labelNbr ):
+def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str, tree_n, tree_d, label_nbr):
     """Brain tissue segmentation using decision forests.
 
     The main routine executes the medical image analysis pipeline:
@@ -73,15 +73,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    data_trainAll = []
-    singleLabelAll = []
-    labelNbr = labelNbr
-
-    # for x in range(labelNbr):
     singleLabel = labels_train.copy()
-    singleLabel[np.where(singleLabel != labelNbr)] = 0
-        # singleLabelAll.append(singleLabel)
-        # data_trainAll.append(data_train)
+    singleLabel[np.where(singleLabel != label_nbr)] = 0
 
     # generate random seed
     initialSeed = 42
@@ -90,27 +83,12 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # warnings.warn('Random forest parameters not properly set.')
     forest = sk_ensemble.RandomForestClassifier(max_features=2,
-                                                n_estimators=treeN,
-                                                max_depth=treeD)
+                                                n_estimators=tree_n,
+                                                max_depth=tree_d)
 
     start_time = timeit.default_timer()
 
-    #pdb.set_trace()
-    # forest.fit(np.concatenate(data_trainAll).squeeze(), np.concatenate(singleLabelAll).squeeze())
     forest.fit(data_train, singleLabel)
-
-        # pdb.set_trace()xx
-
-        # if 1 == x + 1:
-        #     forest1 = forest
-        # if 2 == x + 1:
-        #     forest2 = forest
-        # if 3 == x + 1:
-        #     forest3 = forest
-        # if 4 == x + 1:
-        #     forest4 = forest
-        # if 5 == x + 1:
-        #     forest5 = forest
 
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
@@ -122,7 +100,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     print('-' * 5, 'Testing...')
 
     # initialize evaluator
-    evaluator = putil.init_evaluator(labelNbr)
+    evaluator = putil.init_evaluator(label_nbr)
 
     # crawl the training image directories
     crawler = futil.FileSystemDataCrawler(data_test_dir,
@@ -163,15 +141,17 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     post_process_params = {'simple_post': True}
     images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
                                                      post_process_params, multi_process=True)
-    # pdb.set_trace()
+
+    # Prepare end of save path
+    path_end = '_Label-' + str(label_nbr) + 'TreeN-' + str(tree_n) + '_TreeD-' + str(tree_d) + '_SEG.mha'
 
     for i, img in enumerate(images_test):
         evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_Label-' + str(labelNbr) + 'TreeN-' + str(treeN) + '_TreeD-' + str(treeD) + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ +  '_Label-' +  str(labelNbr) + 'TreeN-' + str(treeN) + '_TreeD-' + str(treeD) + '_SEG-PP.mha'), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + path_end), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + path_end), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
@@ -227,11 +207,13 @@ if __name__ == "__main__":
         help='Directory with testing data.'
     )
 
-
     args = parser.parse_args()
 
-    treeN = [1, 5, 10, 20, 50]
-    treeD = [5, 10, 20, 40, 80]
-    label = [1, 2, 3, 4, 5]
-    for i in range(len(treeN)):
-        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir, treeN[3], treeD[3],label[i])
+    # Iterating settings
+    tree_nbr = [1, 5, 10, 20, 50]
+    tree_depths = [5, 10, 20, 40, 80]
+    labels = [1, 2, 3, 4, 5]
+
+    for i in range(len(tree_nbr)):
+        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
+             tree_nbr[3], tree_depths[3], labels[i])
