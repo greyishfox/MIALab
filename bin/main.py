@@ -233,5 +233,5 @@ if __name__ == "__main__":
     treeN = [1, 5, 10, 20, 50]
     treeD = [5, 10, 20, 40, 80]
     label = [1, 2, 3, 4, 5]
-    for i in range(5):
-        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir, treeN[2], treeD[3],label[i])
+    for i in range(len(treeN)):
+        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir, treeN[3], treeD[3],label[i])
