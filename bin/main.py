@@ -93,8 +93,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # create a result directory with timestamp
     # t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    fodler_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + str(label_nbr)
-    result_dir = os.path.join(result_dir, fodler_id)
+    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + str(label_nbr)
+    result_dir = os.path.join(result_dir, folder_id)
     os.makedirs(result_dir, exist_ok=True)
 
     print('-' * 5, 'Testing...')
@@ -115,14 +115,12 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_prediction = []
     images_probabilities = []
 
-
     for img in images_test:
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
         predictions = forest.predict(img.feature_matrix[0])
         probabilities = forest.predict_proba(img.feature_matrix[0])
-
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
@@ -146,8 +144,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + fodler_id + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + fodler_id + '_SEG.mha'), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + folder_id + '_SEG.mha'), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + folder_id + '_SEG.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
@@ -192,14 +190,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data_train_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/train2/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/train/')),
         help='Directory with training data.'
     )
 
     parser.add_argument(
         '--data_test_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/test2/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/test/')),
         help='Directory with testing data.'
     )
 
