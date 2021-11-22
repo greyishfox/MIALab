@@ -1,8 +1,8 @@
 """This module contains utility classes and functions."""
 import enum
 import os
-import pdb
 import typing as t
+import pdb
 import warnings
 
 import numpy as np
@@ -46,12 +46,14 @@ class FeatureImageTypes(enum.Enum):
     T2w_INTENSITY = 4
     T2w_GRADIENT_INTENSITY = 5
 
-class brainLabels(enum.Enum):
+
+class BrainLabels(enum.Enum):
     WhiteMatter = 1
     GreyMatter = 2
     Hippocampus = 3
     Amygdala = 4
     Thalamus = 5
+
 
 class FeatureExtractor:
     """Represents a feature extractor."""
@@ -103,7 +105,6 @@ class FeatureExtractor:
 
     def _generate_feature_matrix(self):
         """Generates a feature matrix."""
-
 
         mask = None
         if self.training:
@@ -320,16 +321,18 @@ def init_evaluator(nbr) -> eval_.Evaluator:
     #           5: 'Thalamus'
     #           }
 
-    # labels = {nbr: brainLabels(nbr)}
-    if(nbr == 1):
+    # labels = {nbr: BrainLabels(nbr)}
+
+    labels = []
+    if nbr:
         labels = {1: 'WhiteMatter'}
-    if(nbr == 2):
+    if nbr == 2:
         labels = {2: 'GreyMatter'}
-    if(nbr == 3):
+    if nbr == 3:
         labels = {3: 'Hippocampus'}
-    if(nbr == 4):
+    if nbr == 4:
         labels = {4: 'Amygdala'}
-    if(nbr == 5):
+    if nbr == 5:
         labels = {5: 'Thalamus'}
 
     evaluator = eval_.SegmentationEvaluator(metrics, labels)

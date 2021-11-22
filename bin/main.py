@@ -73,13 +73,14 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
+    # Ensure deep copy and set all labels appart of the searched one to zero (background)
     singleLabel = labels_train.copy()
     singleLabel[np.where(singleLabel != label_nbr)] = 0
 
-    # generate random seed
-    initialSeed = 42
-    np.random.seed(initialSeed)
-    np.random.random()
+    # # generate random seed
+    # initialSeed = 42
+    # np.random.seed(initialSeed)
+    # np.random.random()
 
     # warnings.warn('Random forest parameters not properly set.')
     forest = sk_ensemble.RandomForestClassifier(max_features=2,
@@ -87,14 +88,13 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                                                 max_depth=tree_d)
 
     start_time = timeit.default_timer()
-
     forest.fit(data_train, singleLabel)
-
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
-    t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    result_dir = os.path.join(result_dir, t)
+    # t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    fodler_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + str(label_nbr)
+    result_dir = os.path.join(result_dir, fodler_id)
     os.makedirs(result_dir, exist_ok=True)
 
     print('-' * 5, 'Testing...')
@@ -115,12 +115,11 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_prediction = []
     images_probabilities = []
 
-    # pdb.set_trace()
-    # images_testAll = np.concatenate([images_test]*5).squeeze()
 
     for img in images_test:
         print('-' * 10, 'Testing', img.id_)
 
+        start_time = timeit.default_timer()
         predictions = forest.predict(img.feature_matrix[0])
         probabilities = forest.predict_proba(img.feature_matrix[0])
 
@@ -142,16 +141,13 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
                                                      post_process_params, multi_process=True)
 
-    # Prepare end of save path
-    path_end = '_Label-' + str(label_nbr) + 'TreeN-' + str(tree_n) + '_TreeD-' + str(tree_d) + '_SEG.mha'
-
     for i, img in enumerate(images_test):
         evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + path_end), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + path_end), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + fodler_id + '_SEG.mha'), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + fodler_id + '_SEG.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
@@ -213,7 +209,8 @@ if __name__ == "__main__":
     tree_nbr = [1, 5, 10, 20, 50]
     tree_depths = [5, 10, 20, 40, 80]
     labels = [1, 2, 3, 4, 5]
-
-    for i in range(len(tree_nbr)):
+    # for i in range(len(tree_nbr)):
+    #     for ii in range(len(tree_depths)):
+    for iii in range(len(labels)):
         main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
-             tree_nbr[3], tree_depths[3], labels[i])
+             tree_nbr[3], tree_depths[3], labels[iii])
