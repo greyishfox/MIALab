@@ -204,11 +204,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Iterating settings
-    tree_nbr = [1, 5, 10, 20, 50]
-    tree_depths = [5, 10, 20, 40, 80]
+    tree_nbr = [1, 5, 10, 20, 50]  # [1, 5, 10, 20, 50]
+    tree_depths = [5, 10, 20, 40, 80]  # [5, 10, 20, 40, 80]
     labels = [1, 2, 3, 4, 5]
     # for i in range(len(tree_nbr)):
-    #     for ii in range(len(tree_depths)):
-    for iii in range(len(labels)):
-        main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
-             tree_nbr[3], tree_depths[3], labels[iii])
+    for ii in range(len(tree_depths)):
+        for iii in range(len(labels)):
+            main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
+                 tree_nbr[2], tree_depths[ii], labels[iii])

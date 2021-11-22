@@ -5,15 +5,20 @@ import numpy as np
 import pandas as pd
 
 
-def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_label):
+def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_label, single_label_flag):
     metrics_table = []
     res = []
+
+    # Lambda function to iterate differently in case of multi labeled or single labeled data
+    # Case multi label = data_vec index includes all labels and need to be iterated len(label_vec) times
+    # In case of single label data_vec each index need only to be iterated ones but we have a long  data vec
+    f_idx = lambda x, y: x * len(label_vec) + y if single_label_flag else x
 
     # Iterate through data collect: [ random forest - depth or tree number (changing variable) , label, dice value,
     # HDRFDST value]
     for i, rf_param in enumerate(rf_param_vec):
-        for label in label_vec:
-            res_subset = data_vec[i].loc[data_vec[i]['LABEL'] == label]
+        for ii, label in enumerate(label_vec):
+            res_subset = data_vec[f_idx(i, ii)].loc[data_vec[f_idx(i, ii)]['LABEL'] == label]
             label_dice = res_subset['DICE'].mean()
             label_HDRFDST = res_subset['HDRFDST'].mean()
             metrics_table.append([rf_param, label, label_dice, label_HDRFDST])
@@ -76,16 +81,26 @@ def main():
     # pass is just a placeholder if there is no other code
 
     # Settings
-    result_folder = 'mia-result-3'
+    single_label_flag = True
+    result_folder = 'run1'
+
     tree_nbr_fix = 10
     tree_depth_var = [5, 10, 20, 40, 80]
     plot_limits1 = [[[0, 90, 10], [0.0, 1.0, 0.2]],
                     [[0, 90, 10], [0.0, 50.0, 10]]]
-    tree_depth_fix = 20
+    tree_depth_fix = 40
     tree_nbr_var = [1, 5, 10, 20, 50]
     plot_limits2 = [[[0, 60, 10], [0.0, 1.0, 0.2]],
                     [[0, 60, 10], [0, 60, 10]]]
+
+    # Prepare variables
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
+
+    if single_label_flag:
+        label_iteration = label_vec
+    else:
+        label_iteration = ["all"]
+
     res_vec_depths = []
     res_vec_trees = []
 
@@ -96,18 +111,21 @@ def main():
 
     # Load csv files
     for tree_depth, tree_nbr in zip(tree_depth_var, tree_nbr_var):
-        path = os.path.join(result_folder,
-                            'Fix-tree-nbr_' + 'TreeD-' + str(tree_depth).zfill(2) + '-TreeN-' + str(tree_nbr_fix).zfill(
-                                2), 'results.csv')
-        res_vec_depths.append(pd.read_csv(path, sep=';'))
-        path = os.path.join(result_folder,
-                            'Fix-tree-depth_' + 'TreeD-' + str(tree_depth_fix).zfill(2) + '-TreeN-' + str(
-                                tree_nbr).zfill(2), 'results.csv')
-        res_vec_trees.append(pd.read_csv(path, sep=';'))
+        for label_id in label_iteration:
+            if not single_label_flag:  # data not yet generate for single label
+                path = os.path.join(result_folder, 'TreeD-' + str(tree_depth).zfill(3) + '-TreeN-' + str(
+                    tree_nbr_fix).zfill(3) + '-Label-' + str(label_id), 'results.csv')
+                res_vec_depths.append(pd.read_csv(path, sep=';'))
+            path = os.path.join(result_folder, 'TreeD-' + str(tree_depth_fix).zfill(3) + '-TreeN-' + str(
+                tree_nbr).zfill(3) + '-Label-' + str(label_id), 'results.csv')
+            res_vec_trees.append(pd.read_csv(path, sep=';'))
 
     # Plot results
-    plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
-    plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number")
+    if not single_label_flag:
+        plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth",
+                     single_label_flag)
+    plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number",
+                 single_label_flag)
 
 
 if __name__ == '__main__':
