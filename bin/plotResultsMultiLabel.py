@@ -97,7 +97,7 @@ def main():
     label_vec *= len(label_vec)
 
     if single_label_flag:
-        label_ids = label_vec
+        label_ids = [1, 2, 3, 4, 5]*len(label_vec)
     else:
         label_ids = ["all"]*len(label_vec)
 

@@ -204,9 +204,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Iterating settings
-    tree_nbr = [1, 5, 10, 20, 50]  # [1, 5, 10, 20, 50]
-    tree_depths = [5, 10, 20, 40, 80]  # [5, 10, 20, 40, 80]
-    labels = [1, 2, 3, 4, 5]
+    tree_nbr = [1, 5, 10, 20, 50]
+    tree_depths = [5, 10, 20, 40, 80]
+    labels = [0, 1, 2, 3, 4, 5] # Zero stands for all labels!
     # for i in range(len(tree_nbr)):
     for ii in range(len(tree_depths)):
         for iii in range(len(labels)):

@@ -314,16 +314,13 @@ def init_evaluator(nbr) -> eval_.Evaluator:
     # -> Hausdorff distance is suitable if the accuracy of the boundary is of importance
 
     # # define the labels to evaluate
-    # labels = {1: 'WhiteMatter',
-    #           2: 'GreyMatter',
-    #           3: 'Hippocampus',
-    #           4: 'Amygdala',
-    #           5: 'Thalamus'
-    #           }
-
-    # labels = {nbr: BrainLabels(nbr)}
-
     labels = []
+    if nbr == 0:
+        labels = {1: 'WhiteMatter',
+                  2: 'GreyMatter',
+                  3: 'Hippocampus',
+                  4: 'Amygdala',
+                  5: 'Thalamus' }
     if nbr:
         labels = {1: 'WhiteMatter'}
     if nbr == 2:
