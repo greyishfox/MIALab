@@ -78,7 +78,7 @@ def main():
     # pass is just a placeholder if there is no other code
 
     # Settings
-    single_label_flag = True
+    single_label_flag = False
     result_folder = 'run1'
 
     tree_nbr_fix = 10
@@ -99,7 +99,7 @@ def main():
     if single_label_flag:
         label_ids = [1, 2, 3, 4, 5]*len(label_vec)
     else:
-        label_ids = ["all"]*len(label_vec)
+        label_ids = [0]*len(label_vec)
 
     res_vec_depths = []
     res_vec_trees = []
@@ -110,19 +110,17 @@ def main():
         exit()
 
     # Prepare filename
-    f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + z
+    f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + str(z)
 
     # Load csv files
     for label, tree_depth, tree_nbr in zip(label_ids, tree_depth_var, tree_nbr_var):
-        if not single_label_flag:  # data not yet generate for single label
-            path = os.path.join(result_folder, f_fileName(tree_depth, tree_nbr_fix, label), 'results.csv')
-            res_vec_depths.append(pd.read_csv(path, sep=';'))
+        path = os.path.join(result_folder, f_fileName(tree_depth, tree_nbr_fix, label), 'results.csv')
+        res_vec_depths.append(pd.read_csv(path, sep=';'))
         path = os.path.join(result_folder, f_fileName(tree_depth_fix, tree_nbr, label), 'results.csv')
         res_vec_trees.append(pd.read_csv(path, sep=';'))
 
     # Plot results
-    if not single_label_flag:
-        plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
+    plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
     plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number")
 
 
