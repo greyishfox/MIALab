@@ -2,6 +2,7 @@
 import enum
 import os
 import typing as t
+import pdb
 import warnings
 
 import numpy as np
@@ -44,6 +45,14 @@ class FeatureImageTypes(enum.Enum):
     T1w_GRADIENT_INTENSITY = 3
     T2w_INTENSITY = 4
     T2w_GRADIENT_INTENSITY = 5
+
+
+class BrainLabels(enum.Enum):
+    WhiteMatter = 1
+    GreyMatter = 2
+    Hippocampus = 3
+    Amygdala = 4
+    Thalamus = 5
 
 
 class FeatureExtractor:
@@ -123,6 +132,8 @@ class FeatureExtractor:
             mask = np.logical_not(mask)
 
         # generate features
+        # pdb.set_trace()
+        # TODO: why is here self.img.feature_images.items() zu gross! 7 statt 5
         data = np.concatenate(
             [self._image_as_numpy_array(image, mask) for id_, image in self.img.feature_images.items()],
             axis=1)
@@ -288,7 +299,7 @@ def post_process(img: structure.BrainImage, segmentation: sitk.Image, probabilit
     return pipeline.execute(segmentation)
 
 
-def init_evaluator() -> eval_.Evaluator:
+def init_evaluator(nbr) -> eval_.Evaluator:
     """Initializes an evaluator.
 
     Returns:
@@ -302,13 +313,24 @@ def init_evaluator() -> eval_.Evaluator:
     # -> Average distance & Probabilistic distance are suitable if there are outliers (stable)
     # -> Hausdorff distance is suitable if the accuracy of the boundary is of importance
 
-    # define the labels to evaluate
-    labels = {1: 'WhiteMatter',
-              2: 'GreyMatter',
-              3: 'Hippocampus',
-              4: 'Amygdala',
-              5: 'Thalamus'
-              }
+    # # define the labels to evaluate
+    labels = []
+    if nbr == 0:
+        labels = {1: 'WhiteMatter',
+                  2: 'GreyMatter',
+                  3: 'Hippocampus',
+                  4: 'Amygdala',
+                  5: 'Thalamus' }
+    if nbr:
+        labels = {1: 'WhiteMatter'}
+    if nbr == 2:
+        labels = {2: 'GreyMatter'}
+    if nbr == 3:
+        labels = {3: 'Hippocampus'}
+    if nbr == 4:
+        labels = {4: 'Amygdala'}
+    if nbr == 5:
+        labels = {5: 'Thalamus'}
 
     evaluator = eval_.SegmentationEvaluator(metrics, labels)
     return evaluator

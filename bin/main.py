@@ -7,7 +7,8 @@ import datetime
 import os
 import sys
 import timeit
-import warnings
+# import pdb
+# import warnings
 
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
@@ -33,7 +34,7 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
 
 
-def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
+def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str, tree_n, tree_d, label_nbr):
     """Brain tissue segmentation using decision forests.
 
     The main routine executes the medical image analysis pipeline:
@@ -72,29 +73,34 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    # generate random seed
-    initialSeed = 42
-    np.random.seed(initialSeed)
-    np.random.random()
+    # Ensure deep copy and set all labels appart of the searched one to zero (background)
+    singleLabel = labels_train.copy()
+    singleLabel[np.where(singleLabel != label_nbr)] = 0
+
+    # # generate random seed
+    # initialSeed = 42
+    # np.random.seed(initialSeed)
+    # np.random.random()
 
     # warnings.warn('Random forest parameters not properly set.')
-    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=10,
-                                                max_depth=10)
+    forest = sk_ensemble.RandomForestClassifier(max_features=2,
+                                                n_estimators=tree_n,
+                                                max_depth=tree_d)
 
     start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
+    forest.fit(data_train, singleLabel)
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
-    t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    result_dir = os.path.join(result_dir, t)
+    # t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + str(label_nbr)
+    result_dir = os.path.join(result_dir, folder_id)
     os.makedirs(result_dir, exist_ok=True)
 
     print('-' * 5, 'Testing...')
 
     # initialize evaluator
-    evaluator = putil.init_evaluator()
+    evaluator = putil.init_evaluator(label_nbr)
 
     # crawl the training image directories
     crawler = futil.FileSystemDataCrawler(data_test_dir,
@@ -138,8 +144,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                            img.id_ + '-PP')
 
         # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + folder_id + '_SEG.mha'), True)
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + folder_id + '_SEG.mha'), True)
 
     # use two writers to report the results
     os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
@@ -196,4 +202,13 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir)
+
+    # Iterating settings
+    tree_nbr = [1, 5, 10, 20, 50]
+    tree_depths = [5, 10, 20, 40, 80]
+    labels = [0, 1, 2, 3, 4, 5] # Zero stands for all labels!
+    for i in range(len(tree_nbr)):
+        for ii in range(2, len(tree_depths)):
+            for iii in range(len(labels)):
+                main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
+                     tree_nbr[i], tree_depths[ii], labels[iii])
