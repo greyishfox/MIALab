@@ -3,6 +3,24 @@ import numpy as np
 import csv
 import pandas as pd
 
+def showBoxPlot(data_vec, label_vec):
+    res_table = []
+    for i in range(len(label_vec)):
+        res_subset = data_vec[3].loc[data_vec[3]['LABEL'] == label_vec[i]]
+        res_table.append(pd.DataFrame(res_subset, columns=['SUBJECT', 'LABEL', 'DICE', 'HDRFDST']))
+
+    #print(res_table)
+    W_res = res_table[0]
+    G_res = res_table[1]
+    H_res = res_table[2]
+    A_res = res_table[3]
+    T_res = res_table[4]
+    print(W_res)
+    W_res.boxplot(by='LABEL', column='DICE', figsize=(10, 10))
+    plt.ylim(0, 1)
+
+    plt.show()
+
 def plotMetrics(data_vec, label_vec, rf_param_vec, flag):
     metrics_table = []
     for i in range(5):
@@ -116,11 +134,11 @@ def main():
     df_N10_D80 = pd.read_csv('mia-result/TreeN-10-TreeD-80/results.csv', sep=';')
 
     # Fixed tree depth (tree_d = 20) but varying tree number (1, 5, 10, 20, 50)
-    df_D20_N01 = pd.read_csv('mia-result/TreeD-20-TreeN-01/results.csv', sep=';')
-    df_D20_N05 = pd.read_csv('mia-result/TreeD-20-TreeN-05/results.csv', sep=';')
-    df_D20_N10 = pd.read_csv('mia-result/TreeD-20-TreeN-10/results.csv', sep=';')
-    df_D20_N20 = pd.read_csv('mia-result/TreeD-20-TreeN-20/results.csv', sep=';')
-    df_D20_N50 = pd.read_csv('mia-result/TreeD-20-TreeN-50/results.csv', sep=';')
+    df_D40_N01 = pd.read_csv('mia-result/TreeD-40-TreeN-01/results.csv', sep=';')
+    df_D40_N05 = pd.read_csv('mia-result/TreeD-40-TreeN-05/results.csv', sep=';')
+    df_D40_N10 = pd.read_csv('mia-result/TreeD-40-TreeN-10/results.csv', sep=';')
+    df_D40_N20 = pd.read_csv('mia-result/TreeD-40-TreeN-20/results.csv', sep=';')
+    df_D40_N50 = pd.read_csv('mia-result/TreeD-40-TreeN-50/results.csv', sep=';')
 
     #df_N10_D05.boxplot(by='LABEL', column='DICE', grid=False)
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
@@ -129,14 +147,15 @@ def main():
     res_vec = [df_N10_D05, df_N10_D10, df_N10_D20, df_N10_D40, df_N10_D80]
     rf_depth_vec = [5, 10, 20, 40, 80]
     flag = 0
-    plotMetrics(res_vec, label_vec, rf_depth_vec, flag)
+    #plotMetrics(res_vec, label_vec, rf_depth_vec, flag)
 
     # Define vectors for change in tree number
-    res_vec_d = [df_D20_N01, df_D20_N05, df_D20_N10, df_D20_N20, df_D20_N50]
+    res_vec_d = [df_D40_N01, df_D40_N05, df_D40_N10, df_D40_N20, df_D40_N50]
     rf_num_vec = [1, 5, 10, 20, 50]
     flag = 1
-    plotMetrics(res_vec_d, label_vec, rf_num_vec, flag)
+    #plotMetrics(res_vec_d, label_vec, rf_num_vec, flag)
 
+    showBoxPlot(res_vec_d, label_vec)
 
 if __name__ == '__main__':
     main()
