@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-# The following boxplot design was adapted from: https://matplotlib.org/stable/gallery/statistics/boxplot_demo.html
-def advBoxPlot(single_label_train, multi_label, label_names):
+def dataFrameToList(single_label_train, multi_label, label_names, metric):
     # Prepare label data for boxplot:
     # Convert pandas DataFrame to list (required for matplotlib as written below)
 
@@ -14,25 +13,43 @@ def advBoxPlot(single_label_train, multi_label, label_names):
     for i in range(len(label_names)):
         temp = pd.DataFrame(multi_label.loc[multi_label['LABEL'] == label_names[i]])
         multi_label_list.append(temp['DICE'].tolist())
+        multi_label_list.append(temp['HDRFDST'].tolist())
 
     # Single-label list
     single_label_list = []
     for i in range(len(label_names)):
         single_label_list.append(single_label_train[i]['DICE'].tolist())
+        single_label_list.append(single_label_train[i]['HDRFDST'].tolist())
 
+    # Create list of label lists (single-label and multi-label)
+    if metric == 'DICE':
+        data = [
+            single_label_list[0], multi_label_list[0],
+            single_label_list[2], multi_label_list[2],
+            single_label_list[4], multi_label_list[4],
+            single_label_list[6], multi_label_list[6],
+            single_label_list[8], multi_label_list[8],
+        ]
+    elif metric == 'HDRFDST':
+        data = [
+            single_label_list[1], multi_label_list[1],
+            single_label_list[3], multi_label_list[3],
+            single_label_list[5], multi_label_list[5],
+            single_label_list[7], multi_label_list[7],
+            single_label_list[9], multi_label_list[9],
+        ]
+    else:
+        print("Error: Unknown metric!")
+
+    return data
+
+
+# The following boxplot design was adapted from: https://matplotlib.org/stable/gallery/statistics/boxplot_demo.html
+def advBoxPlot(data, metric, yLimit):
     # Define names on the x-axis
     xAxis_text = ['WhiteMatter_Single', 'WhiteMatter_Multi', 'GreyMatter_Single', 'GreyMatter_Multi',
                   'Hippocampus_Single', 'Hippocampus_Multi', 'Amygdala_Single', 'Amygdala_Multi',
                   'Thalamus_Single', 'Thalamus_Multi']
-
-    # Create list of label lists (single-label and multi-label)
-    data = [
-        single_label_list[0], multi_label_list[0],
-        single_label_list[1], multi_label_list[1],
-        single_label_list[2], multi_label_list[2],
-        single_label_list[3], multi_label_list[3],
-        single_label_list[4], multi_label_list[4],
-    ]
 
     # Define figure characteristics
     fig, ax1 = plt.subplots(figsize=(8, 6))
@@ -53,7 +70,7 @@ def advBoxPlot(single_label_train, multi_label, label_names):
         axisbelow=True,  # Hide the grid behind plot objects
         title='Comparison Of Label-Specific VS. Multi-Label Random Forest Classifiers',
         xlabel='Labels',
-        ylabel='DICE',
+        ylabel=metric,
     )
 
     # Now fill the boxes with desired colors
@@ -86,8 +103,8 @@ def advBoxPlot(single_label_train, multi_label, label_names):
 
     # Set the axes ranges and axes labels
     ax1.set_xlim(0.5, num_boxes + 0.5)
-    top = 1.0
-    bottom = 0.0
+    top = yLimit[0]
+    bottom = yLimit[1]
     ax1.set_ylim(bottom, top)
     ax1.set_xticklabels(xAxis_text, rotation=45, fontsize=8)
 
@@ -106,10 +123,18 @@ def advBoxPlot(single_label_train, multi_label, label_names):
                  weight='bold', color=box_colors[k])
 
     # Finally, add a basic legend
-    fig.text(0.82, 0.350, 'Single-Labels', backgroundcolor=box_colors[0], color='black', weight='roman', size='x-small')
-    fig.text(0.82, 0.325, 'Multi-Labels  ', backgroundcolor=box_colors[1], color='black', weight='roman', size='x-small')
-    fig.text(0.82, 0.297, 'o', color='black', weight='normal', size='medium')
-    fig.text(0.838, 0.297, 'Mean Value', color='black', weight='roman', size='x-small')
+    if metric == 'DICE':
+        fig.text(0.82, 0.350, 'Single-Labels', backgroundcolor=box_colors[0], color='black', weight='roman', size='x-small')
+        fig.text(0.82, 0.325, 'Multi-Labels  ', backgroundcolor=box_colors[1], color='black', weight='roman', size='x-small')
+        fig.text(0.82, 0.297, 'o', color='black', weight='normal', size='medium')
+        fig.text(0.838, 0.297, 'Mean Value', color='black', weight='roman', size='x-small')
+    elif metric == 'HDRFDST':
+        fig.text(0.84, 0.320, 'Single-Labels', backgroundcolor=box_colors[0], color='black', weight='roman', size='x-small')
+        fig.text(0.84, 0.295, 'Multi-Labels  ', backgroundcolor=box_colors[1], color='black', weight='roman', size='x-small')
+        fig.text(0.84, 0.267, 'o', color='black', weight='normal', size='medium')
+        fig.text(0.858, 0.267, 'Mean Value', color='black', weight='roman', size='x-small')
+    else:
+        print("Error: Unknown metric!")
 
     plt.show()
 
@@ -129,12 +154,24 @@ def main():
 
     # Create label vector
     label_train = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
+    # Create metric vector
+    metricVec = ['DICE', 'HDRFDST']
+
+    # Define ylimits for DICE and HDRFDST -> [DICE_top, DICE_bottom, HDRFDST_top, HDRFDST_bottom]
+    yLimit_DICE = [1.0, 0.0]
+    yLimit_HDRFDST = [20.0, 0.0]
+
 
     # Create single-label vector
     sigl_lbl_train = [sigl_lbl_1, sigl_lbl_2, sigl_lbl_3, sigl_lbl_4, sigl_lbl_5]
 
-    # run box plot method
-    advBoxPlot(sigl_lbl_train, mult_lbl, label_train)
+    # Convert dataFrame to list
+    DICE_data = dataFrameToList(sigl_lbl_train, mult_lbl, label_train, metricVec[0])
+    HDRFDST_data = dataFrameToList(sigl_lbl_train, mult_lbl, label_train, metricVec[1])
+
+    # Run boxplot method
+    advBoxPlot(DICE_data, metricVec[0], yLimit_DICE)
+    advBoxPlot(HDRFDST_data, metricVec[1], yLimit_HDRFDST)
 
 
 if __name__ == '__main__':
