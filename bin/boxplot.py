@@ -1,53 +1,45 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as pltpat
 import numpy as np
-import csv
 import pandas as pd
-import os
-import seaborn as sns
 
+
+# The following boxplot design was adapted from: https://matplotlib.org/stable/gallery/statistics/boxplot_demo.html
 def advBoxPlot(single_label_train, multi_label, label_names):
-    # Prepare label data for boxplot
-    wm_multi_lst = pd.DataFrame(multi_label.loc[multi_label['LABEL'] == label_names[0]])
+    # Prepare label data for boxplot:
+    # Convert pandas DataFrame to list (required for matplotlib as written below)
 
-    wm_multi_lst = wm_multi_lst['DICE'].tolist()
-    print(wm_multi_lst)
+    # Multi-label list
+    multi_label_list = []
+    for i in range(len(label_names)):
+        temp = pd.DataFrame(multi_label.loc[multi_label['LABEL'] == label_names[i]])
+        multi_label_list.append(temp['DICE'].tolist())
 
-
-
-
+    # Single-label list
+    single_label_list = []
+    for i in range(len(label_names)):
+        single_label_list.append(single_label_train[i]['DICE'].tolist())
 
     # Define names on the x-axis
     xAxis_text = ['WhiteMatter_Single', 'WhiteMatter_Multi', 'GreyMatter_Single', 'GreyMatter_Multi',
                   'Hippocampus_Single', 'Hippocampus_Multi', 'Amygdala_Single', 'Amygdala_Multi',
                   'Thalamus_Single', 'Thalamus_Multi']
-    N = 500
 
-    norm = np.random.normal(1, 1, N)
-    logn = np.random.lognormal(1, 1, N)
-    expo = np.random.exponential(1, N)
-    gumb = np.random.gumbel(6, 4, N)
-    tria = np.random.triangular(2, 9, 11, N)
-
-    # Generate some random indices that we'll use to resample the original data
-    # arrays. For code brevity, just use the same random indices for each array
-    bootstrap_indices = np.random.randint(0, N, N)
+    # Create list of label lists (single-label and multi-label)
     data = [
-        norm, wm_multi_lst,
-        logn, logn[bootstrap_indices],
-        expo, expo[bootstrap_indices],
-        gumb, gumb[bootstrap_indices],
-        tria, tria[bootstrap_indices],
+        single_label_list[0], multi_label_list[0],
+        single_label_list[1], multi_label_list[1],
+        single_label_list[2], multi_label_list[2],
+        single_label_list[3], multi_label_list[3],
+        single_label_list[4], multi_label_list[4],
     ]
 
-    print('Number of rows: ' + str(len(data[0])))
-    print('Number of cols: ' + str(len(data)))
-
-    fig, ax1 = plt.subplots(figsize=(8, 8))
+    # Define figure characteristics
+    fig, ax1 = plt.subplots(figsize=(8, 6))
     fig.canvas.manager.set_window_title('Boxplot of Single-label vs. Multi-label')
     fig.subplots_adjust(left=0.08, right=0.95, top=0.9, bottom=0.25)
-    # fig.subplots_adjust(left=0.075, right=0.95, top=0.9, bottom=0.25)
 
+    # Define boxplot design
     bp = ax1.boxplot(data, notch=0, sym='+', vert=1, whis=1.5)
     plt.setp(bp['boxes'], color='black')
     plt.setp(bp['whiskers'], color='black')
@@ -56,6 +48,7 @@ def advBoxPlot(single_label_train, multi_label, label_names):
     # Add horizontal grid
     ax1.yaxis.grid(True, linestyle='-', which='major', color='grey', alpha=0.5)
 
+    # Add title and label for xAxis & yAxis
     ax1.set(
         axisbelow=True,  # Hide the grid behind plot objects
         title='Comparison Of Label-Specific VS. Multi-Label Random Forest Classifiers',
@@ -93,8 +86,8 @@ def advBoxPlot(single_label_train, multi_label, label_names):
 
     # Set the axes ranges and axes labels
     ax1.set_xlim(0.5, num_boxes + 0.5)
-    top = 40
-    bottom = -5
+    top = 1.0
+    bottom = 0.0
     ax1.set_ylim(bottom, top)
     ax1.set_xticklabels(xAxis_text, rotation=45, fontsize=8)
 
@@ -104,49 +97,20 @@ def advBoxPlot(single_label_train, multi_label, label_names):
     # (just use two decimal places of precision)
     pos = np.arange(num_boxes) + 1
     upper_labels = [str(round(s, 2)) for s in medians]
-    weights = ['bold', 'bold']
+
     for tick, label in zip(range(num_boxes), ax1.get_xticklabels()):
         k = tick % 2
         ax1.text(pos[tick], .95, upper_labels[tick],
                  transform=ax1.get_xaxis_transform(),
                  horizontalalignment='center', size='x-small',
-                 weight=weights[k], color=box_colors[k])
+                 weight='bold', color=box_colors[k])
 
     # Finally, add a basic legend
-    fig.text(0.80, 0.08, 'Single-Labels', backgroundcolor=box_colors[0], color='black', weight='roman', size='x-small')
-    fig.text(0.80, 0.045, 'Multi-Labels  ', backgroundcolor=box_colors[1], color='black', weight='roman', size='x-small')
-    fig.text(0.80, 0.013, 'o', color='black', weight='normal', size='medium')
-    fig.text(0.818, 0.013, 'Mean Value', color='black', weight='roman', size='x-small')
+    fig.text(0.82, 0.350, 'Single-Labels', backgroundcolor=box_colors[0], color='black', weight='roman', size='x-small')
+    fig.text(0.82, 0.325, 'Multi-Labels  ', backgroundcolor=box_colors[1], color='black', weight='roman', size='x-small')
+    fig.text(0.82, 0.297, 'o', color='black', weight='normal', size='medium')
+    fig.text(0.838, 0.297, 'Mean Value', color='black', weight='roman', size='x-small')
 
-    plt.show()
-
-
-
-
-def showBoxPlot(s_lbl_train, m_lbl, label_vec):
-    # Add additional column 'TYPE' to both DataFrames
-    label_type = ['MULTI', 'SINGLE']
-
-    m_lbl['TYPE'] = label_type[0]
-
-    for i in range(len(s_lbl_train)):
-        s_lbl_train[i]['TYPE'] = label_type[1]
-
-    single_labels = pd.DataFrame(s_lbl_train[0],
-                                 columns=['SUBJECT', 'LABEL', 'DICE', 'HDRFDST', 'TYPE']).assign(Location=1)
-
-    multi_label = pd.DataFrame(m_lbl[m_lbl['LABEL'] == label_vec[0]],
-                               columns=['SUBJECT', 'LABEL', 'DICE', 'HDRFDST', 'TYPE']).assign(Location=2)
-
-    # for i in range(len(label_vec)):
-    #     single_labels[i].boxplot(by='LABEL', column='DICE', figsize=(10, 10))
-    #     plt.ylim(0, 1)
-
-    # multi_label.boxplot(by='LABEL', column='DICE', figsize=(10, 10))
-
-    mult_sgl_concat = pd.DataFrame(pd.concat([single_labels, multi_label]))
-    mult_sgl_concat.boxplot(by='TYPE', column='DICE')
-    plt.ylim(0, 1)
     plt.show()
 
 
@@ -170,8 +134,6 @@ def main():
     sigl_lbl_train = [sigl_lbl_1, sigl_lbl_2, sigl_lbl_3, sigl_lbl_4, sigl_lbl_5]
 
     # run box plot method
-    #showBoxPlot(sigl_lbl_train, mult_lbl, label_train)
-
     advBoxPlot(sigl_lbl_train, mult_lbl, label_train)
 
 
