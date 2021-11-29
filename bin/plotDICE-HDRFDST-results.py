@@ -91,12 +91,21 @@ def main():
 
     # Prepare variables
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
+    choose_labels = [True, True, False, True, False]
+    label_vec = np.where(choose_labels, label_vec, '')
+    label_vec = ' '.join(label_vec).split() # Remvoe empty strings !
+
+    # Exit if settings are wrong and not working with existing code
+    if np.array([tree_depth_var]).shape != np.array([tree_nbr_var]).shape or \
+            np.array([tree_nbr_fix]).shape != (1,) or np.array([tree_depth_fix]).shape != (1,):
+        exit()
+
     tree_depth_var = np.repeat(tree_depth_var, len(label_vec))
-    tree_nbr_var = np.repeat(tree_nbr_var, len(label_vec))
-    label_vec *= len(label_vec)
+    tree_nbr_var = np.repeat(tree_depth_var, len(label_vec))
+    label_vec = np.repeat(label_vec, len(tree_depth_var))
 
     if single_label_flag:
-        label_ids = [1, 2, 3, 4, 5]*len(label_vec)
+        label_ids = np.repeat( np.where(choose_labels * np.array([1, 2, 3, 4, 5] != 0)), len(label_vec) )
         save_text = 'single label'
     else:
         label_ids = [0]*len(label_vec)
@@ -104,11 +113,6 @@ def main():
 
     res_vec_depths = []
     res_vec_trees = []
-
-    # Exit if settings are wrong and not working with existing code
-    if np.array([tree_depth_var]).shape != np.array([tree_nbr_var]).shape or \
-            np.array([tree_nbr_fix]).shape != (1,) or np.array([tree_depth_fix]).shape != (1,):
-        exit()
 
     # Prepare filename
     f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + str(z)
@@ -127,13 +131,12 @@ def main():
 
     # Plot results
     plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
-    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_DEPTH' + '_DICE_&_HDRFDST_Result.png'))
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_DEPTH' + '_DICE_&_HDRFDST_Result + label_vec + .png'))
     plt.close('all')
 
     plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number")
-    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_NUM' + '_DICE_&_HDRFDST_Result.png'))
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_NUM' + '_DICE_&_HDRFDST_Result + label_vec + .png'))
     plt.close('all')
-
 
 
 if __name__ == '__main__':
