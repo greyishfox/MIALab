@@ -96,6 +96,7 @@ def main():
 
     # Remvoe empty strings !
     label_vec = ' '.join(label_vec).split()
+    label_str = '-'.join(label_vec)
 
     # Exit if settings are wrong and not working with existing code
     if np.array([tree_depth_var]).shape != np.array([tree_nbr_var]).shape or \
@@ -122,7 +123,7 @@ def main():
     f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + z
 
     # Load csv files
-    for label, tree_depth, tree_nbr in zip(label_vec, tree_depth_var, tree_nbr_var):
+    for label, tree_depth, tree_nbr in zip(label_ids, tree_depth_var, tree_nbr_var):
         path = os.path.join(result_folder, f_fileName(tree_depth, tree_nbr_fix, label), 'results.csv')
         res_vec_depths.append(pd.read_csv(path, sep=';'))
         path = os.path.join(result_folder, f_fileName(tree_depth_fix, tree_nbr, label), 'results.csv')
@@ -135,11 +136,11 @@ def main():
 
     # Plot results
     plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
-    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_DEPTH' + '_DICE_&_HDRFDST_Result + label_vec + .png'))
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_DEPTH' + '_DICE_&_HDRFDST_Result_' + label_str + '.png'))
     plt.close('all')
 
     plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number")
-    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_NUM' + '_DICE_&_HDRFDST_Result + label_vec + .png'))
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_NUM' + '_DICE_&_HDRFDST_Result_' + label_str + '.png'))
     plt.close('all')
 
 
