@@ -1,4 +1,6 @@
 # import pdb
+import pdb
+
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -11,9 +13,6 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
 
     # Iterate through data collect: [ random forest - depth or tree number (changing variable) , label, dice value,
     # HDRFDST value]
-    if len(data_vec) != len(rf_param_vec):
-        data_vec = np.repeat(data_vec, len(label_vec)/len(data_vec))
-
     for data, rf_param, label in zip(data_vec, rf_param_vec, label_vec):
         res_subset = data.loc[data['LABEL'] == label]
         label_dice = res_subset['DICE'].mean()
@@ -26,6 +25,7 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
         res.append(metrics_table[metrics_table['LABEL'] == label])
 
     # Plot DICE graph
+    plt.subplots(2, 2, figsize=(12, 6))
     plt.subplot(1, 2, 1)
 
     # Plot DICE lines
@@ -64,8 +64,7 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
         plt.suptitle("Random Forest with tree depth = " + str(fix_nbr))
 
     # Show plot
-    plt.show()
-
+    plt.draw() # show()
 
 def main():
     # todo: load the "results.csv" file from the mia-results directory
@@ -78,7 +77,7 @@ def main():
     # pass is just a placeholder if there is no other code
 
     # Settings
-    single_label_flag = False
+    single_label_flag = True
     result_folder = 'run1'
 
     tree_nbr_fix = 10
@@ -98,8 +97,10 @@ def main():
 
     if single_label_flag:
         label_ids = [1, 2, 3, 4, 5]*len(label_vec)
+        save_text = 'single label'
     else:
         label_ids = [0]*len(label_vec)
+        save_text = 'multi label'
 
     res_vec_depths = []
     res_vec_trees = []
@@ -119,9 +120,20 @@ def main():
         path = os.path.join(result_folder, f_fileName(tree_depth_fix, tree_nbr, label), 'results.csv')
         res_vec_trees.append(pd.read_csv(path, sep=';'))
 
+    # pdb.set_trace()
+    result_dir = os.path.join(os.getcwd(), 'PlotResults')
+    os.makedirs(result_dir, exist_ok=True)
+
+
     # Plot results
     plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth")
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_DEPTH' + '_DICE_&_HDRFDST_Result.png'))
+    plt.close('all')
+
     plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number")
+    plt.savefig(os.path.join(result_dir, save_text + '_' + 'RF_NUM' + '_DICE_&_HDRFDST_Result.png'))
+    plt.close('all')
+
 
 
 if __name__ == '__main__':
