@@ -17,6 +17,7 @@ def dataFrameToList(single_label_train, multi_label, label_names, metric):
 
     # Single-label list
     single_label_list = []
+    data = []
     for i in range(len(label_names)):
         single_label_list.append(single_label_train[i]['DICE'].tolist())
         single_label_list.append(single_label_train[i]['HDRFDST'].tolist())
@@ -46,6 +47,14 @@ def dataFrameToList(single_label_train, multi_label, label_names, metric):
 
 # The following boxplot design was adapted from: https://matplotlib.org/stable/gallery/statistics/boxplot_demo.html
 def advBoxPlot(data, metric, yLimit):
+    # Calculate standard deviation
+    std_values = []
+    var_values = []
+    for i in range(len(data)):
+        std_values.append(np.std(data[i]))
+        var_values.append(np.var(data[i]))
+
+    print(std_values)
     # Define names on the x-axis
     xAxis_text = ['WhiteMatter_Single', 'WhiteMatter_Multi', 'GreyMatter_Single', 'GreyMatter_Multi',
                   'Hippocampus_Single', 'Hippocampus_Multi', 'Amygdala_Single', 'Amygdala_Multi',
@@ -63,7 +72,7 @@ def advBoxPlot(data, metric, yLimit):
     plt.setp(bp['fliers'], color='red', marker='+')
 
     # Add horizontal grid
-    ax1.yaxis.grid(True, linestyle='-', which='major', color='grey', alpha=0.5)
+    ax1.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 
     # Add title and label for xAxis & yAxis
     ax1.set(
@@ -85,7 +94,7 @@ def advBoxPlot(data, metric, yLimit):
             box_x.append(box.get_xdata()[j])
             box_y.append(box.get_ydata()[j])
         box_coords = np.column_stack([box_x, box_y])
-        # Alternate between Dark Khaki and Royal Blue
+        # Alternate between skyblue and orange
         ax1.add_patch(pltpat.Polygon(box_coords, facecolor=box_colors[i % 2]))
         # Now draw the median lines back over what we just filled in
         med = bp['medians'][i]
@@ -106,7 +115,7 @@ def advBoxPlot(data, metric, yLimit):
     top = yLimit[0]
     bottom = yLimit[1]
     ax1.set_ylim(bottom, top)
-    ax1.set_xticklabels(xAxis_text, rotation=45, fontsize=8)
+    ax1.set_xticklabels(xAxis_text, rotation=60, fontsize=8)
 
     # Due to the Y-axis scale being different across samples, it can be
     # hard to compare differences in medians across the samples. Add upper
@@ -115,9 +124,26 @@ def advBoxPlot(data, metric, yLimit):
     pos = np.arange(num_boxes) + 1
     upper_labels = [str(round(s, 2)) for s in medians]
 
+    ax1.text(pos[0], .96, 'Median:', transform=ax1.get_xaxis_transform(), horizontalalignment='center', size='x-small',
+                 weight='bold', color='black')
+
     for tick, label in zip(range(num_boxes), ax1.get_xticklabels()):
         k = tick % 2
-        ax1.text(pos[tick], .95, upper_labels[tick],
+        ax1.text(pos[tick], .93, upper_labels[tick],
+                 transform=ax1.get_xaxis_transform(),
+                 horizontalalignment='center', size='x-small',
+                 weight='bold', color=box_colors[k])
+
+    # STD and VAR
+    #pos = np.arange(num_boxes) + 1
+    upper_labels = [str(round(s, 3)) for s in std_values]
+
+    ax1.text(pos[0], .90, 'STD:', transform=ax1.get_xaxis_transform(), horizontalalignment='center', size='x-small',
+                 weight='bold', color='black')
+
+    for tick, label in zip(range(num_boxes), ax1.get_xticklabels()):
+        k = tick % 2
+        ax1.text(pos[tick], .87, upper_labels[tick],
                  transform=ax1.get_xaxis_transform(),
                  horizontalalignment='center', size='x-small',
                  weight='bold', color=box_colors[k])
@@ -158,7 +184,7 @@ def main():
     metricVec = ['DICE', 'HDRFDST']
 
     # Define ylimits for DICE and HDRFDST -> [DICE_top, DICE_bottom, HDRFDST_top, HDRFDST_bottom]
-    yLimit_DICE = [1.0, 0.0]
+    yLimit_DICE = [1.1, 0.0]
     yLimit_HDRFDST = [20.0, 0.0]
 
 
