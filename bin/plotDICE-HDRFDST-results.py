@@ -77,7 +77,7 @@ def main():
     # pass is just a placeholder if there is no other code
 
     # Settings
-    single_label_flag = True
+    single_label_flag = False
     result_folder = 'run1'
 
     tree_nbr_fix = 10
@@ -91,34 +91,38 @@ def main():
 
     # Prepare variables
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
-    choose_labels = [True, True, False, True, False]
+    choose_labels = [True, True, True, True, True]
     label_vec = np.where(choose_labels, label_vec, '')
-    label_vec = ' '.join(label_vec).split() # Remvoe empty strings !
+
+    # Remvoe empty strings !
+    label_vec = ' '.join(label_vec).split()
 
     # Exit if settings are wrong and not working with existing code
     if np.array([tree_depth_var]).shape != np.array([tree_nbr_var]).shape or \
             np.array([tree_nbr_fix]).shape != (1,) or np.array([tree_depth_fix]).shape != (1,):
         exit()
 
-    tree_depth_var = np.repeat(tree_depth_var, len(label_vec))
-    tree_nbr_var = np.repeat(tree_depth_var, len(label_vec))
-    label_vec = np.repeat(label_vec, len(tree_depth_var))
+    len_label = len(label_vec)
+    len_var = len(tree_depth_var)
+    label_vec *= len_var
+    tree_depth_var = np.repeat(tree_depth_var, len_label)
+    tree_nbr_var = np.repeat(tree_nbr_var, len_label)
 
     if single_label_flag:
-        label_ids = np.repeat( np.where(choose_labels * np.array([1, 2, 3, 4, 5] != 0)), len(label_vec) )
+        label_ids = label_vec
         save_text = 'single label'
     else:
-        label_ids = [0]*len(label_vec)
+        label_ids = ['all']*len_var*len_label
         save_text = 'multi label'
 
     res_vec_depths = []
     res_vec_trees = []
 
     # Prepare filename
-    f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + str(z)
+    f_fileName = lambda x, y, z: 'TreeD-' + str(x).zfill(3) + '-TreeN-' + str(y).zfill(3) + '-Label-' + z
 
     # Load csv files
-    for label, tree_depth, tree_nbr in zip(label_ids, tree_depth_var, tree_nbr_var):
+    for label, tree_depth, tree_nbr in zip(label_vec, tree_depth_var, tree_nbr_var):
         path = os.path.join(result_folder, f_fileName(tree_depth, tree_nbr_fix, label), 'results.csv')
         res_vec_depths.append(pd.read_csv(path, sep=';'))
         path = os.path.join(result_folder, f_fileName(tree_depth_fix, tree_nbr, label), 'results.csv')
