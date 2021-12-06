@@ -56,9 +56,9 @@ def advBoxPlot(data, metric, yLimit):
 
     print(std_values)
     # Define names on the x-axis
-    xAxis_text = ['WhiteMatter_Single', 'WhiteMatter_Multi', 'GreyMatter_Single', 'GreyMatter_Multi',
-                  'Hippocampus_Single', 'Hippocampus_Multi', 'Amygdala_Single', 'Amygdala_Multi',
-                  'Thalamus_Single', 'Thalamus_Multi']
+    xAxis_text = ['WhiteMatter\nSingle', 'WhiteMatter\nMulti', 'GreyMatter\nSingle', 'GreyMatter\nMulti',
+                  'Hippocampus\nSingle', 'Hippocampus\nMulti', 'Amygdala\nSingle', 'Amygdala\nMulti',
+                  'Thalamus\nSingle', 'Thalamus\nMulti']
 
     # Define figure characteristics
     fig, ax1 = plt.subplots(figsize=(8, 6))
@@ -83,7 +83,7 @@ def advBoxPlot(data, metric, yLimit):
     )
 
     # Now fill the boxes with desired colors
-    box_colors = ['skyblue', 'orange']
+    box_colors = ['lightblue', 'gold']
     num_boxes = len(data)
     medians = np.empty(num_boxes)
     for i in range(num_boxes):
@@ -132,7 +132,7 @@ def advBoxPlot(data, metric, yLimit):
         ax1.text(pos[tick], .93, upper_labels[tick],
                  transform=ax1.get_xaxis_transform(),
                  horizontalalignment='center', size='x-small',
-                 weight='bold', color=box_colors[k])
+                 weight='bold', color='black')  # color=box_colors[k])
 
     # STD and VAR
     #pos = np.arange(num_boxes) + 1
@@ -146,7 +146,7 @@ def advBoxPlot(data, metric, yLimit):
         ax1.text(pos[tick], .87, upper_labels[tick],
                  transform=ax1.get_xaxis_transform(),
                  horizontalalignment='center', size='x-small',
-                 weight='bold', color=box_colors[k])
+                 weight='bold', color='black')  # color=box_colors[k])
 
     # Finally, add a basic legend
     if metric == 'DICE':
