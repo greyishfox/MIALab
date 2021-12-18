@@ -8,6 +8,15 @@ def dataFrameToList(single_label_train, multi_label, label_names, metric):
     # Prepare label data for boxplot:
     # Convert pandas DataFrame to list (required for matplotlib as written below)
 
+    # There is no post-processing implemented yet...therefore, do not take results from "-PP"-file into account
+    multi_label = multi_label[~multi_label['SUBJECT'].str.endswith('-PP')]
+
+    single_label_train_tmp = []
+    for i in range(len(label_names)):
+        single_label_train_tmp.append(single_label_train[i][~single_label_train[i]['SUBJECT'].str.endswith('-PP')])
+
+    single_label_train = single_label_train_tmp
+
     # Multi-label list
     multi_label_list = []
     for i in range(len(label_names)):
@@ -54,7 +63,6 @@ def advBoxPlot(data, metric, yLimit):
         std_values.append(np.std(data[i]))
         var_values.append(np.var(data[i]))
 
-    print(std_values)
     # Define names on the x-axis
     xAxis_text = ['WhiteMatter\nSingle', 'WhiteMatter\nMulti', 'GreyMatter\nSingle', 'GreyMatter\nMulti',
                   'Hippocampus\nSingle', 'Hippocampus\nMulti', 'Amygdala\nSingle', 'Amygdala\nMulti',
@@ -78,9 +86,11 @@ def advBoxPlot(data, metric, yLimit):
     ax1.set(
         axisbelow=True,  # Hide the grid behind plot objects
         title='Comparison Of Label-Specific VS. Multi-Label Random Forest Classifiers',
-        xlabel='Labels',
-        ylabel=metric,
+        #xlabel='Labels',
+        #ylabel=metric,
     )
+    ax1.set_xlabel(xlabel='Labels', fontsize=10, fontweight="bold")
+    ax1.set_ylabel(ylabel=metric, fontsize=10, fontweight="bold")
 
     # Now fill the boxes with desired colors
     box_colors = ['lightblue', 'gold']
@@ -115,7 +125,7 @@ def advBoxPlot(data, metric, yLimit):
     top = yLimit[0]
     bottom = yLimit[1]
     ax1.set_ylim(bottom, top)
-    ax1.set_xticklabels(xAxis_text, rotation=60, fontsize=8)
+    ax1.set_xticklabels(xAxis_text, rotation=60, fontsize=10)
 
     # Due to the Y-axis scale being different across samples, it can be
     # hard to compare differences in medians across the samples. Add upper
