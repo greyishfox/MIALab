@@ -170,7 +170,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--result_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, './mia-result4')),
+        default=os.path.normpath(os.path.join(script_dir, './mia-result')),
         help='Directory for results.'
     )
 
@@ -184,14 +184,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data_train_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/train3/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/train/')),
         help='Directory with training data.'
     )
 
     parser.add_argument(
         '--data_test_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/test3/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/test/')),
         help='Directory with testing data.'
     )
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     labels = [0, 1, 2, 3, 4, 5]
 
     for i in range(len(tree_nbr)):
-        for ii in range(1):  #range(2, len(tree_depths)):
-            for iii in range(2): #range(len(labels)):
+        for ii in range(len(tree_depths)):
+            for iii in range(len(labels)):
                 main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
-                     tree_nbr[2], tree_depths[i], labels[iii])
+                     tree_nbr[i], tree_depths[ii], labels[iii])
