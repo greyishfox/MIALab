@@ -176,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--result_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, './mia-result')),
+        default=os.path.normpath(os.path.join(script_dir, './mia-result3')),
         help='Directory for results.'
     )
 
@@ -190,14 +190,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data_train_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/train/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/train3/')),
         help='Directory with training data.'
     )
 
     parser.add_argument(
         '--data_test_dir',
         type=str,
-        default=os.path.normpath(os.path.join(script_dir, '../data/test/')),
+        default=os.path.normpath(os.path.join(script_dir, '../data/test3/')),
         help='Directory with testing data.'
     )
 
@@ -207,8 +207,9 @@ if __name__ == "__main__":
     tree_nbr = [1, 5, 10, 20, 50]
     tree_depths = [5, 10, 20, 40, 80]
     labels = [0, 1, 2, 3, 4, 5] # Zero stands for all labels!
-    for i in range(len(tree_nbr)):
-        for ii in range(2, len(tree_depths)):
+    labels_pairs = [("all", 0), ("WhiteMatter", 1), ("GreyMatter", 2), ("Hippocampus", 3), ("Amygdala", 4), ("Thalamus", 5)]
+    for i in range(1): #range(len(tree_nbr)):
+        for ii in range(1): #range(2, len(tree_depths)):
             for iii in range(len(labels)):
                 main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
                      tree_nbr[i], tree_depths[ii], labels[iii])

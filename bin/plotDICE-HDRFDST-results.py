@@ -9,7 +9,12 @@ import pandas as pd
 from babel._compat import force_text
 
 
-def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_label, end_idx, x_labels):
+def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or_num, x_label, end_idx, len_label):
+
+    font = {'weight': 'normal',
+            'size': 14}
+
+    matplotlib.rc('font', **font)
 
     line_style = []
     line_style.append('-')
@@ -22,16 +27,19 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
     for i in range(end_idx):
         metrics_table = []
         res = []
-        data_s_m = data_vec[i*len(label_vec):(i+1)*len(label_vec)]
+        data_s_m = data_vec[i * len(label_vec):(i + 1) * len(label_vec)]
         line_temp = line_style[i]
         for data, rf_param, label in zip(data_s_m, rf_param_vec, label_vec):
             res_subset = data.loc[data['LABEL'] == label]
+            res_subset = res_subset[~res_subset['SUBJECT'].str.endswith('-PP')]
+            # indices = [i for i, s in enumerate(res_subset['SUBJECT']) if not '-PP' in s]
+            # res_subsetnew = res_subset[indices]
             label_dice = res_subset['DICE'].mean()
             label_HDRFDST = res_subset['HDRFDST'].mean()
             metrics_table.append([rf_param, label, label_dice, label_HDRFDST])
 
         # Get results of each label
-        metrics_table = pd.DataFrame(metrics_table, columns=[flag, 'LABEL', 'DICE', 'HDRFDST'])
+        metrics_table = pd.DataFrame(metrics_table, columns=[rf_depth_or_num, 'LABEL', 'DICE', 'HDRFDST'])
         for label in label_vec:
             res.append(metrics_table[metrics_table['LABEL'] == label])
 
@@ -39,15 +47,24 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
         plt.subplot(1, 2, 1)
         plt.gca().set_prop_cycle(None)
         # Plot DICE lines
-        for ii in range(x_labels):
-            plt.plot(res[ii][flag], res[ii]['DICE'], marker='o', mfc='k',ls=line_temp)
+        for ii in range(len_label):
+            plt.plot(res[ii][rf_depth_or_num], res[ii]['DICE'], marker='o', mfc='k', ls=line_temp)
 
         # Plot HDRFDST graph
         plt.subplot(1, 2, 2)
         plt.gca().set_prop_cycle(None)
         # Plot HDRFDST lines
-        for ii in range(x_labels):
-            plt.plot(res[ii][flag], res[ii]['HDRFDST'], marker='o', mfc='k',ls=line_temp)
+        for ii in range(len_label):
+            plt.plot(res[ii][rf_depth_or_num], res[ii]['HDRFDST'], marker='o', mfc='k', ls=line_temp)
+
+    labels_name = []
+
+    for label in label_vec[:len_label]:
+        labels_name.append('ML-' + label)
+
+    if end_idx == 2:
+        for label in label_vec[len_label:2*len_label]:
+            labels_name.append('SL-' + label)
 
     # Set DICE graph layout
     plt.subplot(1, 2, 1)
@@ -55,8 +72,9 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
     plt.ylim(limits[0][1][0], limits[0][1][1])
     plt.xlabel(x_label)
     plt.ylabel("DICE")
-    plt.legend(label_vec, loc='lower right')
+    plt.legend(labels_name, loc='lower right', fontsize=12)
     plt.xticks(rf_param_vec)
+    # plt.yticks(np.arange(limits[0][1][0], limits[0][1][1], step=limits[0][1][2]))
     plt.grid(True)
 
     # Set HDRFDST graph layout
@@ -65,18 +83,20 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, flag, x_lab
     plt.ylim(limits[1][1][0], limits[1][1][1])
     plt.xlabel(x_label)
     plt.ylabel("Hausdorff Distance")
-    plt.legend(label_vec)
+    plt.legend(labels_name, fontsize=12)
     plt.xticks(rf_param_vec)
+    # plt.yticks(np.arange(limits[1][1][0], limits[1][1][1], step=limits[1][1][1]))
     plt.grid(True)
 
     # Depending on fix tree or depth number plot correct subtitles
-    if flag == 'RF_DEPTH':
+    if rf_depth_or_num == 'RF_DEPTH':
         plt.suptitle("Random Forest with number of trees = " + str(fix_nbr))
     else:
         plt.suptitle("Random Forest with tree depth = " + str(fix_nbr))
 
     # Show plot
-    plt.draw() # show()
+    plt.draw()  # show()
+
 
 def main():
     # todo: load the "results.csv" file from the mia-results directory
@@ -89,24 +109,27 @@ def main():
     # pass is just a placeholder if there is no other code
 
     # Settings
-    result_folder = 'run1'
+    result_folder = 'run_1'
     compareInSameGraph = True
 
     tree_nbr_fix = 10
     tree_depth_var = [5, 10, 20, 40, 80]
     plot_limits1 = [[[0, 90, 10], [0.0, 1.0, 0.2]],
-                    [[0, 90, 10], [0.0, 50.0, 10]]]
+                    [[0, 90, 10], [0.0, 25.0, 5]]]
     tree_depth_fix = 40
     tree_nbr_var = [1, 5, 10, 20, 50]
     plot_limits2 = [[[0, 60, 10], [0.0, 1.0, 0.2]],
-                    [[0, 60, 10], [0, 60, 10]]]
+                    [[0, 60, 10], [0, 90, 10]]]
 
     # Prepare variables
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
     choose_labels = [True, True, False, True, False]
+    #choose_labels = [False, False, True, False, True]
+    #choose_labels = [True, True, False, True, False]
+
     label_vec = np.where(choose_labels, label_vec, '')
 
-    # Remvoe empty strings !
+    # Remove empty strings !
     label_vec = ' '.join(label_vec).split()
     label_str = '-'.join(label_vec)
 
@@ -122,9 +145,8 @@ def main():
     tree_nbr_var = np.repeat(tree_nbr_var, len_label)
 
     label_ids = []
-    label_ids_m = ['all']*len_var*len_label
+    label_ids_m = ['all'] * len_var * len_label
     label_ids_s = label_vec
-
 
     res_vec_depths = []
     res_vec_trees = []
@@ -153,12 +175,14 @@ def main():
     os.makedirs(result_dir, exist_ok=True)
 
     # Plot results
-    plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth", end_idx, len_label)
-    plt.savefig(os.path.join(result_dir, 'RF_DEPTH' + '_DICE_&_HDRFDST_Result_' + label_str + '.png'))
+    plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth",
+                 end_idx, len_label)
+    plt.savefig(os.path.join(result_dir, 'RF_DEPTH' + '_DICE_&_HDRFDST_Result_' + label_str + '_' + str(end_idx) + '.png'))
     plt.close('all')
 
-    plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number", end_idx, len_label)
-    plt.savefig(os.path.join(result_dir, 'RF_NUM' + '_DICE_&_HDRFDST_Result_' + label_str + '.png'))
+    plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number", end_idx,
+                 len_label)
+    plt.savefig(os.path.join(result_dir, 'RF_NUM' + '_DICE_&_HDRFDST_Result_' + label_str + '_' + str(end_idx) + '.png'))
     plt.close('all')
 
 
