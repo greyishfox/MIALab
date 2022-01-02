@@ -1,12 +1,9 @@
 # import pdb
-import pdb
-
 import matplotlib.axis
 import matplotlib.pyplot as plt
 import os
 import numpy as np
 import pandas as pd
-from babel._compat import force_text
 
 
 def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or_num, x_label, end_idx, len_label):
@@ -16,10 +13,8 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or
             'size': 14}
     matplotlib.rc('font', **font)
 
-    # Prepare two line siles ( for multi-label and single-label graphs )
-    line_style = []
-    line_style.append('-')
-    line_style.append('--')
+    # Prepare two line styles ( for multi-label and single-label graphs )
+    line_style = ['-', '--']
 
     # Prepare plot
     plt.subplots(2, 2, figsize=(12, 6))
@@ -36,7 +31,7 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or
         line_temp = line_style[i]
         for data, rf_param, label in zip(data_s_m, rf_param_vec, label_vec):
             res_subset = data.loc[data['LABEL'] == label]
-            res_subset = res_subset[~res_subset['SUBJECT'].str.endswith('-PP')] # Remove PP results
+            res_subset = res_subset[~res_subset['SUBJECT'].str.endswith('-PP')]  # Remove PP results
             label_dice = res_subset['DICE'].mean()
             label_HDRFDST = res_subset['HDRFDST'].mean()
             metrics_table.append([rf_param, label, label_dice, label_HDRFDST])
@@ -83,7 +78,7 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or
     # Set HDRFDST graph layout
     plt.subplot(1, 2, 2)
     plt.xlim(limits[1][0][0], limits[1][0][1])
-    # plt.ylim(limits[1][1][0], limits[1][1][1]) # set to automatic for most plots
+    # plt.ylim(limits[1][1][0], limits[1][1][1])  # set to automatic for most plots
     plt.xlabel(x_label)
     plt.ylabel("Hausdorff Distance")
     plt.legend(labels_name, fontsize=12)
@@ -111,10 +106,10 @@ def main():
     # pass is just a placeholder if there is no other code
 
     ####################################################################################################################
-    # Settings (to adapt)
+    # Settings (can be adapted)
 
     # load data from folder
-    result_folder = 'run_1'
+    result_folder = 'run_1'  # 'run_1'
 
     # Compare single and multilayer if not only multi layers will be plot
     compareInSameGraph = True
@@ -122,7 +117,7 @@ def main():
     # Plot series one, with fix tree number and variable tree depth
     # Adapt the parameter first series
     tree_nbr_fix = 10
-    tree_depth_var = [5, 10, 20, 40, 80]
+    tree_depth_var = [5, 10, 20, 40, 80]  # default: [5, 10, 20, 40, 80]
     # Plot limits DICE (first row and Hausdorff second row)
     plot_limits1 = [[[0, 90, 10], [0.0, 1.0, 0.2]],
                     [[0, 90, 10], [0.0, 25.0, 5]]]
@@ -130,19 +125,17 @@ def main():
     # Plot series two, with fix tree depth and variable tree number
     # Adapt the parameter second series
     tree_depth_fix = 40
-    tree_nbr_var = [1, 5, 10, 20, 50]
+    tree_nbr_var = [1, 5, 10, 20, 50]  # default: [1, 5, 10, 20, 50]
     # Plot limits DICE (first row and Hausdorff second row)
     plot_limits2 = [[[0, 60, 10], [0.0, 1.0, 0.2]],
                     [[0, 60, 10], [0, 90, 10]]]
 
-    choose_labels = [True, True, False, True, False]
-    # choose_labels = [False, False, True, False, True]
-    # choose_labels = [True, True, True, True, True]
+    # Set labels: 'WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus'
+    choose_labels = [True, True, False, True, False]  # Often used: [False, False, True, False, True],
 
     ####################################################################################################################
     # Other variables
     label_vec = ['WhiteMatter', 'GreyMatter', 'Hippocampus', 'Amygdala', 'Thalamus']
-
     label_vec = np.where(choose_labels, label_vec, '')
 
     # Remove empty strings !
@@ -197,13 +190,15 @@ def main():
     # First series, with fix tree number and variable tree depth
     plot_metrics(res_vec_depths, label_vec, tree_depth_var, tree_nbr_fix, plot_limits1, 'RF_DEPTH', "Tree Depth",
                  end_idx, len_label)
-    plt.savefig(os.path.join(result_dir, 'RF_DEPTH' + '_DICE_&_HDRFDST_Result_' + label_str + '_' + str(end_idx) + '.png'))
+    plt.savefig(os.path.join(result_dir, 'RF_DEPTH' + '_DICE_&_HDRFDST_Result_' + label_str + '_' +
+                             str(end_idx) + '.png'))
     plt.close('all')
 
     # First series, with fix tree depth and variable tree number
     plot_metrics(res_vec_trees, label_vec, tree_nbr_var, tree_depth_fix, plot_limits2, 'RF_NUM', "Tree Number", end_idx,
                  len_label)
-    plt.savefig(os.path.join(result_dir, 'RF_NUM' + '_DICE_&_HDRFDST_Result_' + label_str + '_' + str(end_idx) + '.png'))
+    plt.savefig(os.path.join(result_dir, 'RF_NUM' + '_DICE_&_HDRFDST_Result_' + label_str + '_' +
+                             str(end_idx) + '.png'))
     plt.close('all')
 
 
