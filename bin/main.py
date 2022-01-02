@@ -93,7 +93,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # create a result directory with timestamp
     # t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + str(label_nbr)
+    labels_pairs = [("all", 0), ("WhiteMatter", 1), ("GreyMatter", 2), ("Hippocampus", 3), ("Amygdala", 4), ("Thalamus", 5)]
+    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + labels_pairs[0][label_nbr]
     result_dir = os.path.join(result_dir, folder_id)
     os.makedirs(result_dir, exist_ok=True)
 
@@ -207,7 +208,6 @@ if __name__ == "__main__":
     tree_nbr = [1, 5, 10, 20, 50]
     tree_depths = [5, 10, 20, 40, 80]
     labels = [0, 1, 2, 3, 4, 5] # Zero stands for all labels!
-    labels_pairs = [("all", 0), ("WhiteMatter", 1), ("GreyMatter", 2), ("Hippocampus", 3), ("Amygdala", 4), ("Thalamus", 5)]
     for i in range(1): #range(len(tree_nbr)):
         for ii in range(1): #range(2, len(tree_depths)):
             for iii in range(len(labels)):
