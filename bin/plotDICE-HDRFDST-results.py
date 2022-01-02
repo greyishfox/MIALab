@@ -96,14 +96,22 @@ def plot_metrics(data_vec, label_vec, rf_param_vec, fix_nbr, limits, rf_depth_or
 
 
 def main():
-    # todo: load the "results.csv" file from the mia-results directory
-    # todo: read the data into a list
-    # todo: plot the Dice coefficients per label (i.e. white matter, gray matter, hippocampus, amygdala, thalamus)
-    #  in a boxplot
 
-    # alternative: instead of manually loading/reading the csv file you could also use the pandas package
-    # but you will need to install it first ('pip install pandas') and import it to this file ('import pandas as pd')
-    # pass is just a placeholder if there is no other code
+    # When you run this script, plots are created and saved directly to the
+    # PlotResults folder. The result is two images with two graphs, one
+    # representing the DICE coefficient and the other representing the Hausdorff
+    # distance. Once a graph with fixed tree number and variable tree depth is
+    # shown while the other time the tree number varies and the tree depth remains
+    # fixed.
+    #
+    # The settings at the beginning of the main can be customized as desired.
+    #
+    # It is possible to output the multi label plot separately or combined with the
+    # single label plots. For the combined plot, leave the variable
+    # compareInSameGraph set to true.
+    #
+    # In the graph all or only the desired labels can be displayed which can be
+    # selected with the variable choose_labels
 
     ####################################################################################################################
     # Settings (can be adapted)

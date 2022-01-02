@@ -133,8 +133,6 @@ class FeatureExtractor:
             mask = np.logical_not(mask)
 
         # generate features
-        # pdb.set_trace()
-        # TODO: why is here self.img.feature_images.items() zu gross! 7 statt 5
         data = np.concatenate(
             [self._image_as_numpy_array(image, mask) for id_, image in self.img.feature_images.items()],
             axis=1)
