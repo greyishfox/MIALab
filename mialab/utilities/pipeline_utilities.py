@@ -48,6 +48,7 @@ class FeatureImageTypes(enum.Enum):
 
 
 class BrainLabels(enum.Enum):
+    all = 0
     WhiteMatter = 1
     GreyMatter = 2
     Hippocampus = 3

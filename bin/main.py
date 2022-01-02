@@ -73,7 +73,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    # Ensure deep copy and set all labels appart of the searched one to zero (background)
+    # Ensure deep copy and set all labels apart of the searched one to zero (background)
     singleLabel = labels_train.copy()
     singleLabel[np.where(singleLabel != label_nbr)] = 0
 
@@ -88,13 +88,16 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                                                 max_depth=tree_d)
 
     start_time = timeit.default_timer()
-    forest.fit(data_train, singleLabel)
+    if(label_nbr==0):
+        forest.fit(data_train, labels_train)
+    else:
+        forest.fit(data_train, singleLabel)
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
     # t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     labels_pairs = [("all", 0), ("WhiteMatter", 1), ("GreyMatter", 2), ("Hippocampus", 3), ("Amygdala", 4), ("Thalamus", 5)]
-    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + labels_pairs[0][label_nbr]
+    folder_id = 'TreeD-' + str(tree_d).zfill(3) + '-TreeN-' + str(tree_n).zfill(3) + '-Label-' + putil.BrainLabels(label_nbr).name
     result_dir = os.path.join(result_dir, folder_id)
     os.makedirs(result_dir, exist_ok=True)
 
@@ -166,7 +169,6 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     # clear results such that the evaluator is ready for the next evaluation
     evaluator.clear()
 
-
 if __name__ == "__main__":
     """The program's entry point."""
 
@@ -207,9 +209,9 @@ if __name__ == "__main__":
     # Iterating settings
     tree_nbr = [1, 5, 10, 20, 50]
     tree_depths = [5, 10, 20, 40, 80]
-    labels = [0, 1, 2, 3, 4, 5] # Zero stands for all labels!
+    labels = [0] # Zero stands for all labels!
     for i in range(1): #range(len(tree_nbr)):
         for ii in range(1): #range(2, len(tree_depths)):
             for iii in range(len(labels)):
                 main(args.result_dir, args.data_atlas_dir, args.data_train_dir, args.data_test_dir,
-                     tree_nbr[i], tree_depths[ii], labels[iii])
+                     tree_nbr[2], tree_depths[ii], labels[iii])
