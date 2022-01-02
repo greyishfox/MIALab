@@ -178,14 +178,14 @@ def advBoxPlot(data, metric, yLimit):
 def main():
 
     # Single-labels (1=WiteMatter, 2=GreyMatter, 3=Hippocampus, 4=Amygdala, 5=Thalamus)
-    sigl_lbl_1 = pd.read_csv('run1/TreeD-040-TreeN-020-Label-1/results.csv', sep=';')
-    sigl_lbl_2 = pd.read_csv('run1/TreeD-040-TreeN-020-Label-2/results.csv', sep=';')
-    sigl_lbl_3 = pd.read_csv('run1/TreeD-040-TreeN-020-Label-3/results.csv', sep=';')
-    sigl_lbl_4 = pd.read_csv('run1/TreeD-040-TreeN-020-Label-4/results.csv', sep=';')
-    sigl_lbl_5 = pd.read_csv('run1/TreeD-040-TreeN-020-Label-5/results.csv', sep=';')
+    sigl_lbl_1 = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-WhiteMatter/results.csv', sep=';')
+    sigl_lbl_2 = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-GreyMatter/results.csv', sep=';')
+    sigl_lbl_3 = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-Hippocampus/results.csv', sep=';')
+    sigl_lbl_4 = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-Amygdala/results.csv', sep=';')
+    sigl_lbl_5 = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-Thalamus/results.csv', sep=';')
 
     # Multi-label
-    mult_lbl = pd.read_csv('mia-result/TreeD-40-TreeN-20/results.csv', sep=';')
+    mult_lbl = pd.read_csv('run_1/TreeD-040-TreeN-020-Label-all/results.csv', sep=';')
 
 
     # Create label vector
