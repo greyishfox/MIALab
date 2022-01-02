@@ -116,8 +116,8 @@ def main():
     ####################################################################################################################
     # Settings (can be adapted)
 
-    # load data from folder
-    result_folder = 'mia-result'  # 'run_1'
+    # load data from folder (run_1 is a folder with sample results)
+    result_folder = 'run_1'  # 'mia-result'
 
     # Compare single and multilayer if not only multi layers will be plot
     compareInSameGraph = True
